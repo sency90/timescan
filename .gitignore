@@ -23,7 +23,9 @@ test_output/
 *.gcov
 
 # ---- VSCode ----
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 
 # ---- Backup / temp files ----
 *~
