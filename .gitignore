@@ -26,6 +26,7 @@ test_output/
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
+!.vscode/settings.json
 
 # ---- Backup / temp files ----
 *~
