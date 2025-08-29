@@ -58,8 +58,8 @@ TEST_F(TimeManagerTest, MatchesTimeFilter_InvalidMode) {
 }
 
 TEST(FileManagerTest, TraverseSingleFile) {
-  vector<Entry> files;
-  vector<Entry> dirs;
+  vector<Entry> file_entries;
+  vector<Entry> dir_entries;
 
   time_t cur_time = std::time(nullptr);
 
@@ -75,9 +75,9 @@ TEST(FileManagerTest, TraverseSingleFile) {
                                "filemanager_test_dir2/222_1.txt",
                                "filemanager_test_dir1/subdir/111_1_1.txt"};
 
-  char cur_dir[2048];
-  getcwd(cur_dir, 2047);
-  string cur_dir_str(cur_dir);
+  char cur_dir_charr[2048];
+  getcwd(cur_dir_charr, 2047);
+  string cur_dir_str(cur_dir_charr);
 
   try {
     for (auto &path : dir_paths) {
@@ -99,13 +99,13 @@ TEST(FileManagerTest, TraverseSingleFile) {
     }
 
     FileManager fm;
-    fm.Traverse("./", files, dirs, cur_time, "after");
+    fm.Traverse("./", file_entries, dir_entries, cur_time, "after");
 
-    EXPECT_EQ(dirs.size(), dir_paths.size()+1);
-    EXPECT_EQ(files.size(), file_paths.size());
+    EXPECT_EQ(dir_entries.size(), dir_paths.size()+1);
+    EXPECT_EQ(file_entries.size(), file_paths.size());
 
-    fm.WriteToFile("dir_list.txt", dirs);
-    fm.WriteToFile("file_list.txt", files);
+    fm.WriteToFile("dir_list.txt", dir_entries);
+    fm.WriteToFile("file_list.txt", file_entries);
   } catch (std::exception &ex) {
     printf("[EXCEPTION] %s\n", ex.what());
   }

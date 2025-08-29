@@ -4,9 +4,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <unordered_map>
 
 #include <fstream>
+#include <unordered_map>
 #include <vector>
 
 #include "FileManager.h"
@@ -14,61 +14,63 @@
 
 class Entry {
    public:
-    std::string path;
-    time_t mtime;
+    std::string path_;
+    time_t mtime_;
 
-    Entry()=default;
-    Entry(const std::string & path, time_t mtime):path(path), mtime(mtime) {}
+    Entry() = default;
+    Entry(const std::string &path, time_t mtime) : path_(path), mtime_(mtime) {}
 
-    bool operator<(const Entry &rhs) const { return mtime < rhs.mtime; }
-    bool operator>(const Entry &rhs) const { return mtime > rhs.mtime; }
+    bool operator<(const Entry &rhs) const { return mtime_ < rhs.mtime_; }
+    bool operator>(const Entry &rhs) const { return mtime_ > rhs.mtime_; }
 };
 
 class FileManager {
    public:
-    FileManager() : tm(TimeManager::GetInstance()) {
-        semicolon_udic[0] = "";
+    FileManager() : tm_(TimeManager::GetInstance()) { semicolon_udic_[0] = ""; }
+
+    const std::string &CRefMultipleColonStr(int cnt) {
+        if (semicolon_udic_.count(cnt) == 0) {
+            return semicolon_udic_[cnt] = CRefMultipleColonStr(cnt - 1) + ":";
+        } else
+            return semicolon_udic_[cnt];
     }
 
-    const std::string & CRefMultipleColonStr(int cnt) {
-        if(semicolon_udic.count(cnt)==0) {
-            return semicolon_udic[cnt] = CRefMultipleColonStr(cnt-1)+":";
-        }
-        else return semicolon_udic[cnt];
-    }
-
-    void Traverse(const std::string &dir_path, std::vector<Entry> &files,
-                  std::vector<Entry> &dirs, time_t user_time,
-                  const std::string &mode, int level=1) {
-        if (realpath(dir_path.c_str(), abs_path) == nullptr) {
+    void Traverse(const std::string &dpath, std::vector<Entry> &file_entries,
+                  std::vector<Entry> &dir_entries, time_t user_time,
+                  const std::string &mode, int level = 1) {
+        if (realpath(dpath.c_str(), abs_dpath_charr_) == nullptr) {
             throw std::invalid_argument("Failed to get absolute path for: " +
-                                        dir_path);
+                                        dpath);
         }
-        if(level==1) {
+        std::string abs_dpath(abs_dpath_charr_);
+
+        if (level == 1) {
             struct stat st;
-            Stat(abs_path, st);
-            dirs.emplace_back(abs_path, st.st_mtime);
+            if (!Stat(abs_dpath, st)) {
+                throw std::invalid_argument("no such dir: " + abs_dpath);
+            }
+            dir_entries.emplace_back(abs_dpath, st.st_mtime);
         }
-        std::string abs_path_str(abs_path);
 
         std::vector<std::string> entry_names;
-        if (!ReadDir(abs_path_str, entry_names)) {
-            std::cerr << "Failed to open directory: " << dir_path << "\n";
+        if (!ReadDir(abs_dpath, entry_names)) {
+            std::cerr << "Failed to open directory: " << dpath << "\n";
             return;
         }
 
         for (const auto &name : entry_names) {
-            std::string full_path = abs_path_str + "/" + name;
+            std::string abs_path = abs_dpath + "/" + name;
 
             struct stat st;
-            if (!Stat(full_path, st)) continue;
-            if (!tm.MatchesTimeFilter(st.st_mtime, user_time, mode)) continue;
+            if (!Stat(abs_path, st)) continue;
+            if (!tm_.MatchesTimeFilter(st.st_mtime, user_time, mode)) continue;
 
-            if (IsDir(full_path)) {
-                dirs.emplace_back(CRefMultipleColonStr(level)+name, st.st_mtime);
-                Traverse(full_path, files, dirs, user_time, mode, level+1);
-            } else if (IsFile(full_path)) {
-                files.push_back({full_path, st.st_mtime});
+            if (IsDir(abs_path)) {
+                dir_entries.emplace_back(CRefMultipleColonStr(level) + name,
+                                  st.st_mtime);
+                Traverse(abs_path, file_entries, dir_entries, user_time, mode, level + 1);
+            } else if (IsFile(abs_path)) {
+                file_entries.emplace_back(abs_path, st.st_mtime);
             }
         }
     }
@@ -77,7 +79,7 @@ class FileManager {
                      const std::vector<Entry> &entries) {
         std::ofstream ofs(output_path.c_str());
         for (const auto &e : entries) {
-            ofs << tm.FormatTime(e.mtime) << " " << e.path << "\n";
+            ofs << tm_.FormatTime(e.mtime_) << " " << e.path_ << "\n";
         }
     }
 
@@ -112,8 +114,8 @@ class FileManager {
     }
 
    private:
-    TimeManager &tm;
-    char abs_path[2048];
-    std::unordered_map<int, std::string> semicolon_udic;
+    TimeManager &tm_;
+    char abs_dpath_charr_[2048];
+    std::unordered_map<int, std::string> semicolon_udic_;
 };
 #endif

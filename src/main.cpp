@@ -53,16 +53,12 @@ int main(int argc, char *argv[]) {
 
         time_t user_time = GetUserTime(date_str, time_str);
 
-        FileManager fs;
-        std::vector<Entry> files, dirs;
+        FileManager fm;
+        std::vector<Entry> file_entries, dir_entries;
+        fm.Traverse(path, file_entries, dir_entries, user_time, mode);
 
-        fs.Traverse(path, files, dirs, user_time, mode);
-
-        //std::sort(files.begin(), files.end(), std::greater<Entry>());
-        //std::sort(dirs.begin(), dirs.end(), std::greater<Entry>());
-
-        fs.WriteToFile("file_list.txt", files);
-        fs.WriteToFile("dir_list.txt", dirs);
+        fm.WriteToFile("file_list.txt", file_entries);
+        fm.WriteToFile("dir_list.txt", dir_entries);
     } catch (std::exception &ex) {
         printf("[EXCEPTION] %s\n", ex.what());
     }
