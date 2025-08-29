@@ -55,10 +55,11 @@ int main(int argc, char *argv[]) {
 
         FileManager fs;
         std::vector<Entry> files, dirs;
+
         fs.Traverse(path, files, dirs, user_time, mode);
 
-        std::sort(files.begin(), files.end(), std::greater<Entry>());
-        std::sort(dirs.begin(), dirs.end(), std::greater<Entry>());
+        //std::sort(files.begin(), files.end(), std::greater<Entry>());
+        //std::sort(dirs.begin(), dirs.end(), std::greater<Entry>());
 
         fs.WriteToFile("file_list.txt", files);
         fs.WriteToFile("dir_list.txt", dirs);

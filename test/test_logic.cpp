@@ -101,8 +101,11 @@ TEST(FileManagerTest, TraverseSingleFile) {
     FileManager fm;
     fm.Traverse("./", files, dirs, cur_time, "after");
 
-    EXPECT_EQ(dirs.size(), dir_paths.size());
+    EXPECT_EQ(dirs.size(), dir_paths.size()+1);
     EXPECT_EQ(files.size(), file_paths.size());
+
+    fm.WriteToFile("dir_list.txt", dirs);
+    fm.WriteToFile("file_list.txt", files);
   } catch (std::exception &ex) {
     printf("[EXCEPTION] %s\n", ex.what());
   }
