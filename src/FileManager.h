@@ -2,6 +2,7 @@
 #ifndef __POSIXFILESYSTEM_H__
 #define __POSIXFILESYSTEM_H__
 #include <dirent.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -67,8 +68,9 @@ class FileManager {
 
             if (IsDir(abs_path)) {
                 dir_entries.emplace_back(CRefMultipleColonStr(level) + name,
-                                  st.st_mtime);
-                Traverse(abs_path, file_entries, dir_entries, user_time, mode, level + 1);
+                                         st.st_mtime);
+                Traverse(abs_path, file_entries, dir_entries, user_time, mode,
+                         level + 1);
             } else if (IsFile(abs_path)) {
                 file_entries.emplace_back(abs_path, st.st_mtime);
             }
@@ -115,7 +117,7 @@ class FileManager {
 
    private:
     TimeManager &tm_;
-    char abs_dpath_charr_[2048];
+    char abs_dpath_charr_[PATH_MAX];
     std::unordered_map<int, std::string> semicolon_udic_;
 };
 #endif
